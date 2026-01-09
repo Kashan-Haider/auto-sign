@@ -1,21 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import AdminDashboard from './pages/AdminDashboard';
-import SupportDashboard from './pages/SupportDaashboard';
-import ClientSigning from './pages/ClientSigning';
-import Login from './pages/Login';
-import { User, UserRole } from './types';
-import { setToken, getToken, AuthAPI } from './services/api';
+import React, { useState, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
+import AdminDashboard from "./pages/AdminDashboard";
+import SupportDashboard from "./pages/SupportDaashboard";
+import ClientSigning from "./pages/ClientSigning";
+import Login from "./pages/Login";
+import { User, UserRole } from "./types";
+import { setToken, getToken, AuthAPI } from "./services/api";
 
 // Protected Route Component
-const ProtectedRoute = ({ 
-  children, 
-  allowedRoles, 
-  user 
-}: { 
-  children?: React.ReactNode; 
-  allowedRoles: UserRole[]; 
-  user: User | null 
+const ProtectedRoute = ({
+  children,
+  allowedRoles,
+  user,
+}: {
+  children?: React.ReactNode;
+  allowedRoles: UserRole[];
+  user: User | null;
 }) => {
   const location = useLocation();
 
@@ -25,8 +31,8 @@ const ProtectedRoute = ({
 
   if (!allowedRoles.includes(user.role)) {
     // Redirect based on role if trying to access unauthorized area
-    const redirectTarget = user.role === UserRole.ADMIN ? '/admin' : '/support';
-    return <Navigate to={redirectTarget} replace />; 
+    const redirectTarget = user.role === UserRole.ADMIN ? "/admin" : "/support";
+    return <Navigate to={redirectTarget} replace />;
   }
 
   return <>{children}</>;
@@ -45,7 +51,7 @@ export default function App() {
           if (resp?.user) setCurrentUser(resp.user as User);
         }
       } catch (_) {
-        setToken('');
+        setToken("");
       } finally {
         setLoading(false);
       }
@@ -55,15 +61,34 @@ export default function App() {
 
   const handleLogout = () => {
     setCurrentUser(null);
-    setToken('');
+    setToken("");
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    );
 
   return (
-    <HashRouter>
+    <Router>
       <Routes>
-        <Route path="/" element={<Navigate to={currentUser ? (currentUser.role === UserRole.ADMIN ? "/admin" : "/support") : "/login"} replace />} />
+        <Route
+          path="/"
+          element={
+            <Navigate
+              to={
+                currentUser
+                  ? currentUser.role === UserRole.ADMIN
+                    ? "/admin"
+                    : "/support"
+                  : "/login"
+              }
+              replace
+            />
+          }
+        />
 
         <Route
           path="/admin"
@@ -83,12 +108,14 @@ export default function App() {
           }
         />
 
-        <Route path="/login" element={<Login onLogin={(user) => setCurrentUser(user)} />} />
+        <Route
+          path="/login"
+          element={<Login onLogin={(user) => setCurrentUser(user)} />}
+        />
 
         {/* Client Signing Route - Does not strictly require prior login, manages its own auth flow */}
         <Route path="/sign/:token" element={<ClientSigning />} />
-
       </Routes>
-    </HashRouter>
+    </Router>
   );
 }
